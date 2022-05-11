@@ -23,7 +23,6 @@ Gtk::Box * tracking_box = nullptr;
 Gtk::Box * coupling_box = nullptr;
 Gtk::Box * fire_box = nullptr;
 Gtk::Box * telemetrie_box = nullptr;
-Gtk::Label * camera_control_label = nullptr;
 Gtk::Button * apply_button = nullptr;
 Gtk::Button * manual_tracking_button = nullptr;
 Gtk::Button * cancel_tracking_button = nullptr;
@@ -105,7 +104,6 @@ void enable_all_detecting_functions() {
   enable_joystick_button -> set_sensitive(true);
   spinbox_bearing -> set_sensitive(true);
   disable_joystick_button -> set_sensitive(false);
-   desactivate_detection_button -> set_sensitive(true);
   hardware.joystick_disconnect();
 
 }
@@ -306,6 +304,7 @@ void disable_all_coupling_functions() {
 ///-----------------------------------------------------------FIRE-------------------------------------------------------
 void on_fire_button_clicked() {
   cout << "fire signal " << endl;
+  fire_signal();
 }
 
 void  disable_all_firing_functions()
@@ -315,7 +314,7 @@ void  disable_all_firing_functions()
 ///-----------------------------------------------------------MAIN-------------------------------------------------------
 int main(int argc, char ** argv) {
 
-  auto app = Gtk::Application::create(argc, argv, "pfe.exemple");
+  auto app = Gtk::Application::create(argc, argv, "pfe.exe");
 
   //Load the GtkBuilder file and instantiate its widgets:
   auto refBuilder = Gtk::Builder::create();
@@ -334,7 +333,6 @@ int main(int argc, char ** argv) {
   MyArea area;
 
   //Get the GtkBuilder-instantiated Dialog:
-  refBuilder -> get_widget("camera_control_label", camera_control_label);
   refBuilder -> get_widget("window", window);
   refBuilder -> get_widget("m_box", m_box);
 
@@ -407,7 +405,7 @@ int main(int argc, char ** argv) {
   visible_camera_radio_button -> set_sensitive(false);
   m_box -> add(area);
   area.show();
-  
+  //arduino_handshake();
   /////////////////////////////////
 
   return app -> run( * window);

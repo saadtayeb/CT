@@ -62,7 +62,7 @@ int tracker_index = 0;
 string tracker_memoire = "MEDIANFLOW";
 Ptr < Tracker > tracker = TrackerMedianFlow::create();
 //load model 
-torch::jit::script::Module module = torch::jit::load("../yolov5storchscript.pt");
+torch::jit::script::Module module = torch::jit::load("../yolov5.torchscript");
 
 vector < torch::Tensor > non_max_suppression(torch::Tensor preds, float score_thresh = 0.5, float iou_thresh = 0.5) {
   vector < torch::Tensor > output;

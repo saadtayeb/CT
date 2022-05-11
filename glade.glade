@@ -2,11 +2,6 @@
 <!-- Generated with glade 3.22.2 -->
 <interface>
   <requires lib="gtk+" version="3.24"/>
-  <object class="GtkAction" id="action1">
-    <property name="tooltip" translatable="yes">
-</property>
-  </object>
-  <object class="GtkAction" id="action2"/>
   <object class="GtkAdjustment" id="adjustment1">
     <property name="upper">180</property>
     <property name="step_increment">1</property>
@@ -15,6 +10,7 @@
   <object class="GtkAdjustment" id="adjustment2">
     <property name="lower">1</property>
     <property name="upper">50000</property>
+    <property name="value">100</property>
     <property name="step_increment">1</property>
     <property name="page_increment">10</property>
   </object>
@@ -27,6 +23,19 @@
     <property name="upper">255</property>
     <property name="step_increment">1</property>
     <property name="page_increment">10</property>
+  </object>
+  <object class="GtkImage" id="image1">
+    <property name="width_request">50</property>
+    <property name="height_request">50</property>
+    <property name="visible">True</property>
+    <property name="can_focus">False</property>
+    <property name="opacity">0.93000000000000005</property>
+    <property name="pixbuf">images/coupling.png</property>
+  </object>
+  <object class="GtkImage" id="image2">
+    <property name="visible">True</property>
+    <property name="can_focus">False</property>
+    <property name="pixbuf">images/fire.png</property>
   </object>
   <object class="GtkListStore" id="liststore1">
     <columns>
@@ -62,8 +71,10 @@
     <property name="width_request">1280</property>
     <property name="height_request">720</property>
     <property name="can_focus">False</property>
+    <property name="resizable">False</property>
     <property name="default_width">1280</property>
     <property name="default_height">720</property>
+    <property name="icon">images/icon.jpeg</property>
     <property name="startup_id">window</property>
     <child type="titlebar">
       <placeholder/>
@@ -71,7 +82,7 @@
     <child>
       <object class="GtkFixed" id="window_box">
         <property name="width_request">1280</property>
-        <property name="height_request">720</property>
+        <property name="height_request">881</property>
         <property name="visible">True</property>
         <property name="can_focus">False</property>
         <child>
@@ -85,10 +96,12 @@
               <placeholder/>
             </child>
           </object>
+          <packing>
+            <property name="y">212</property>
+          </packing>
         </child>
         <child>
           <object class="GtkBox" id="operations_box">
-            <property name="width_request">100</property>
             <property name="height_request">80</property>
             <property name="visible">True</property>
             <property name="can_focus">False</property>
@@ -100,21 +113,6 @@
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="orientation">vertical</property>
-                <child>
-                  <object class="GtkLabel" id="camera_control_label">
-                    <property name="height_request">40</property>
-                    <property name="visible">True</property>
-                    <property name="can_focus">False</property>
-                    <property name="halign">center</property>
-                    <property name="valign">center</property>
-                    <property name="label" translatable="yes">CAMERA CONTROL</property>
-                  </object>
-                  <packing>
-                    <property name="expand">False</property>
-                    <property name="fill">False</property>
-                    <property name="position">0</property>
-                  </packing>
-                </child>
                 <child>
                   <object class="GtkBox">
                     <property name="height_request">20</property>
@@ -649,6 +647,8 @@
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
+                        <property name="image">image1</property>
+                        <property name="always_show_image">True</property>
                         <signal name="clicked" handler="on_coupling_button_clicked" swapped="no"/>
                       </object>
                       <packing>
@@ -697,6 +697,8 @@
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="receives_default">True</property>
+                    <property name="image">image2</property>
+                    <property name="always_show_image">True</property>
                     <signal name="clicked" handler="on_fire_button_clicked" swapped="no"/>
                   </object>
                   <packing>
@@ -714,7 +716,65 @@
             </child>
           </object>
           <packing>
-            <property name="x">960</property>
+            <property name="x">980</property>
+            <property name="y">191</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkBox">
+            <property name="width_request">1300</property>
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <child>
+              <object class="GtkImage">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="pixbuf">images/logoMR.png</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel">
+                <property name="width_request">337</property>
+                <property name="height_request">153</property>
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="label" translatable="yes">PFE : PAR EV2 TAYEB SAAD
+CONDUITE DE TIR OPTRONIQUE </property>
+                <property name="justify">center</property>
+                <property name="track_visited_links">False</property>
+                <attributes>
+                  <attribute name="font-desc" value="Serif Bold Italic 10"/>
+                  <attribute name="weight" value="ultraheavy"/>
+                  <attribute name="scale" value="2.5"/>
+                  <attribute name="gravity" value="east"/>
+                </attributes>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">1</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkImage">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="pixbuf">images/logoMR.png</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">2</property>
+              </packing>
+            </child>
+          </object>
+          <packing>
+            <property name="y">5</property>
           </packing>
         </child>
       </object>
@@ -730,7 +790,6 @@
     <property name="step_increment">1</property>
     <property name="page_increment">10</property>
   </object>
-  <object class="GtkToggleAction" id="toggleaction1"/>
   <object class="GtkAdjustment" id="value_max_adjust">
     <property name="upper">255</property>
     <property name="step_increment">1</property>

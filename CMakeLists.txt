@@ -11,13 +11,13 @@ SET(CMAKE_BUILD_TYPE Release)
 
 include(GNUInstallDirs)
 find_package(PkgConfig REQUIRED)
-
+pkg_check_modules(SERIAL libserial)
 pkg_check_modules(GTKMM gtkmm-3.0) 
 find_package( OpenCV REQUIRED )
 set(Torch_DIR libtorch)
 find_package(Torch PATHS ${Torch_DIR} REQUIRED)
 
-
+set(CMAKE_CXX_FLAGS "-no-pie") 
 add_executable(pfe
 cpp/main.cpp
 cpp/myarea.cpp
@@ -30,12 +30,14 @@ cpp/deep-learning.cpp
 target_include_directories(pfe PUBLIC hpp)
 target_include_directories(pfe PUBLIC cpp)
 include_directories(${OpenCV_INCLUDE_DIRS}
+	            ${SERIAL_INCLUDE_DIRS}
 			    ${TORCH_INCLUDE_DIRS}
 			    ${GTKMM_INCLUDE_DIRS})
 
 target_link_libraries(pfe ${OpenCV_LIBS}
 		          ${TORCH_LIBRARIES} 
-		          ${GTKMM_LIBRARIES})
+		          ${GTKMM_LIBRARIES}
+		          ${SERIAL_LDFLAGS})
 		          
 set_property(TARGET pfe PROPERTY CXX_STANDARD 14)
 

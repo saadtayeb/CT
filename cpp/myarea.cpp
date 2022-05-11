@@ -32,7 +32,7 @@ using namespace std;
 using namespace cv;
 //"/home/saad/Desktop/yolo/video2.avi"
 MyArea::MyArea():
-  videoCapture(2,CAP_GSTREAMER) {
+  videoCapture("../video.mp4") {
   videoCapture.set(CAP_PROP_FRAME_HEIGHT, 720);
   videoCapture.set(CAP_PROP_FRAME_WIDTH, 1280);
 
@@ -72,7 +72,7 @@ bool MyArea::on_my_button_press_event(GdkEventButton * button_event) {
 }
 
 void MyArea::camera_visible() {
-  videoCapture.open(0,CAP_GSTREAMER);
+  videoCapture.open(2,CAP_GSTREAMER);
   videoCapture.set(CAP_PROP_FRAME_HEIGHT, 720);
   videoCapture.set(CAP_PROP_FRAME_WIDTH, 1080);
   detection_enable = 0;
@@ -123,7 +123,7 @@ bool MyArea::on_draw(const Cairo::RefPtr < Cairo::Context > & cr) {
     return true;
   } else {
     no_image();
-    m_image = Gdk::Pixbuf::create_from_file("../no_image.png");
+    m_image = Gdk::Pixbuf::create_from_file("../images/no_image.png");
     Gdk::Cairo::set_source_pixbuf(cr, m_image,
       (cam_width - m_image -> get_width()) / 2, (cam_height - m_image -> get_height()) / 2);
     cr -> paint();

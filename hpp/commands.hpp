@@ -4,9 +4,10 @@
 
 
 #include <gtkmm.h>
-
+void arduino_handshake();
 void move_camera(int x, int y, bool b);
 void telemetre_distance(int distance);
+void fire_signal();
 class Myhardware {
   public:
     Myhardware();

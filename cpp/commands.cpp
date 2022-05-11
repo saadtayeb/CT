@@ -5,9 +5,10 @@
 #include <string.h>
 #include <fcntl.h> // Contains file controls like O_RDWR
 #include <unistd.h> // write(), read(), close()
+
 using namespace std;
 
-int serial_port = open("/dev/ttyACM0", O_WRONLY);//O_RDWR
+int serial_port = open("/dev/ttyACM2", O_RDWR);//O_RDWR  /dev/ttyACM0
 
 
 
@@ -59,4 +60,25 @@ void telemetre_distance(int distance)
   	msg[i] = s[i];
   }
   write(serial_port, msg, sizeof(msg));
+}
+
+void fire_signal()
+{
+ string s ="ff\n";
+ unsigned char msg[s.length()];
+  for (int i  = 0; i <s.length(); i++)
+  {
+  	msg[i] = s[i];
+  }
+  write(serial_port, msg, sizeof(msg));
+}
+
+void arduino_handshake()
+{
+char read_buf [256];
+int n=0;
+while (n < 5)
+{
+ n = read(serial_port, &read_buf, sizeof(read_buf));
+}
 }
