@@ -105,6 +105,8 @@ void enable_all_detecting_functions() {
   spinbox_bearing -> set_sensitive(true);
   disable_joystick_button -> set_sensitive(false);
   hardware.joystick_disconnect();
+  desactivate_detection_button -> set_sensitive(true);
+  activate_detection_button -> set_sensitive(false);
 
 }
 

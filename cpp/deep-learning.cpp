@@ -226,12 +226,12 @@ draw_canvas(frame);
         float score = dets[0][i][4].item().toFloat();
         int classID = dets[0][i][5].item().toInt();
 
-        rectangle(frame, Rect(left, top, (right - left), (bottom - top)), Scalar(0, 255, 0), 2);
+        rectangle(frame, Rect(left, top, (right - left), (bottom - top)), Scalar(255, 255, 255), 2);
 
         putText(frame,
           classnames[classID] + ": " + format("%.2f", score),
           Point(left, top),
-          FONT_HERSHEY_SIMPLEX, (right - left) / 200, Scalar(0, 255, 0), 2);
+          FONT_HERSHEY_SIMPLEX, 0.5 , Scalar(0,0,0), 2);
       }
 
     }

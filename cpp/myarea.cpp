@@ -32,9 +32,9 @@ using namespace std;
 using namespace cv;
 //"/home/saad/Desktop/yolo/video2.avi"
 MyArea::MyArea():
-  videoCapture("../video.mp4") {
-  videoCapture.set(CAP_PROP_FRAME_HEIGHT, 720);
-  videoCapture.set(CAP_PROP_FRAME_WIDTH, 1280);
+  videoCapture(2) {
+  videoCapture.set(4, 720);
+  videoCapture.set(3, 1280);
 
     // Lets refresh drawing area very now and then.
     everyNowAndThenConnection = Glib::signal_timeout().connect(sigc::mem_fun( * this, & MyArea::everyNowAndThen),20);
@@ -72,9 +72,9 @@ bool MyArea::on_my_button_press_event(GdkEventButton * button_event) {
 }
 
 void MyArea::camera_visible() {
-  videoCapture.open(2,CAP_GSTREAMER);
-  videoCapture.set(CAP_PROP_FRAME_HEIGHT, 720);
-  videoCapture.set(CAP_PROP_FRAME_WIDTH, 1080);
+  videoCapture.open(2);
+    videoCapture.set(4, 720);
+  videoCapture.set(3, 1280);
   detection_enable = 0;
 }
 
@@ -89,8 +89,10 @@ void MyArea::disable_detection() {
 }
 
 void MyArea::camera_ir() {
-  videoCapture.open("../video.mp4");
-  detection_enable = 0;	
+  videoCapture.open(2);
+  detection_enable = 0;
+    videoCapture.set(4, 720);
+  videoCapture.set(3, 1280);	
 }
 
 void MyArea::on_get_pointer(int & x, int & y) {
@@ -98,7 +100,8 @@ void MyArea::on_get_pointer(int & x, int & y) {
 }
 
 bool MyArea::on_draw(const Cairo::RefPtr < Cairo::Context > & cr) {
-
+//  cout << videoCapture.get(CAP_PROP_FRAME_HEIGHT) << videoCapture.get(CAP_PROP_FRAME_WIDTH)<< endl;
+//cout << videoCapture.get(CAP_PROP_FPS) <<endl;
   if (width == 0 || height == 0)
     return false;
   if (videoCapture.read(webcam)) {

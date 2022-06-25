@@ -8,7 +8,7 @@
 
 using namespace std;
 
-int serial_port = open("/dev/ttyACM2", O_RDWR);//O_RDWR  /dev/ttyACM0
+int serial_port = open("/dev/ttyACM0", O_WRONLY);//  /dev/ttyACM0
 
 
 
