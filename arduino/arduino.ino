@@ -2,27 +2,32 @@
 #include<Servo.h>
 #include<math.h>
 #include <PID_v1.h>
+#include <Wire.h> 
+#include <LiquidCrystal_I2C.h>
+
+LiquidCrystal_I2C lcd(0x27,16,2);  // set the LCD address to 0x27 for a 16 chars and 2 line display
 
 #define NUM_JOY 2
 #define MIN_VAL 0
 #define MAX_VAL 1023
 #define DELAY_MAX 500
 #define DELAY_MIN 10
-#define DELAY_MOY 20
+#define DELAY_MOY 1
 #define SERVO_X_LIM_MIN 0
 #define SERVO_X_LIM_MAX 180
 #define SERVO_Y_LIM_MIN 60
 #define SERVO_Y_LIM_MAX 160
 #define SERVO_X_LIM_MS_MIN 550
 #define SERVO_X_LIM_MS_MAX 2400
-#define SERVO_Y_LIM_MS_MIN 1250
-#define SERVO_Y_LIM_MS_MAX 2300
+#define SERVO_Y_LIM_MS_MIN 1300
+#define SERVO_Y_LIM_MS_MAX 2200
+#define DISTANCE_TRESHOLD 5
 int delay_tir = 3000;
 bool tir_state =false;
 byte triggerPin = 11;
 byte echoPin = 12;
 float distance;
-float ecart_x = 31;
+float ecart_x = 25;
 float ecart_y = 8;
 const int laser = 4;
 const int fire_pin = 8;
@@ -33,9 +38,13 @@ Servo servo_x;
 Servo servo_y;
 Servo servo_arme_x;
 Servo servo_arme_y;
-const double Kp = 0.05571 , Ki = 0.00099, Kd = 0.000587 ;
-const int joyPin [2] = {A4, A3};
+const double Kpx = 0.0271 , Kix = 0.00109, Kdx = 0.000587 ;
+const double Kpy = 0.018 , Kiy = 0.0030, Kdy = 0.000106 ;
+
+const int joyPin [2] = {A9, A8};
 int c;
+
+float temp_distance;
 String msg = "";         // a string to hold incoming data
 boolean stringComplete = false;  // whether the string is complete
 char  inChar;
@@ -49,15 +58,17 @@ int t1,t2;
 int calibration_joystick_value_x,calibration_joystick_value_y; 
 int joy_error = 2;
 int reference[2] = {90,90};
-
+int jeu_x = -6;
+int jeu_y = 6;
+bool telemetre_state = true;
 bool joytick_state = false;
 bool gisement_search_state  = false;
 bool tracking_state = false; 
 bool couplage_state = false;
-PID PID_x(&Input_x, &Output_x, &Setpoint_x, Kp, Ki, Kd, REVERSE);
-PID PID_y(&Input_y, &Output_y, &Setpoint_y, Kp, Ki, Kd, REVERSE);
+PID PID_x(&Input_x, &Output_x, &Setpoint_x, Kpx, Kix, Kdx, REVERSE);
+PID PID_y(&Input_y, &Output_y, &Setpoint_y, Kpy, Kiy, Kdy, REVERSE);
 HCSR04 hc(triggerPin, echoPin);
-int distance_msg = 0;
+float distance_msg = 0;
 // temp 
 int site;
 float projection;
@@ -65,19 +76,21 @@ char terminator = '\n';
 
 void setup() {
   pinMode(fire_pin,OUTPUT);
+  lcd.init();      
+  lcd.backlight(); 
+  lcd.setCursor(1,0);
+  lcd.print("initializing");
   Serial.begin(115200);
   servo_x.attach(2);
-  servo_y.attach(14);
+  servo_y.attach(3);
   servo_x.write(reference[0]);
   servo_y.write(reference[1]);
   servo_arme_x.attach(5);
   servo_arme_y.attach(6);
-  servo_arme_x.write(reference[0]+1);
+  servo_arme_x.write(reference[0]);
   servo_arme_y.write(reference[1]);
    for (int i = 0; i < NUM_JOY; i++) pinMode(joyPin[i], INPUT);
   msg.reserve(200);
-  calibration_joystick_value_x = map(analogRead(joyPin[0]),MIN_VAL,MAX_VAL,-90,90);
-  calibration_joystick_value_y = map(analogRead(joyPin[1]),MIN_VAL,MAX_VAL,90,-90);
   Setpoint_x = 0;
   Setpoint_y = 0;
   PID_x.SetMode(AUTOMATIC);
@@ -85,11 +98,17 @@ void setup() {
   pinMode(laser,OUTPUT);
   digitalWrite(laser,LOW);
   digitalWrite(fire_pin,LOW);
-  delay(200);
+  calibration_joystick_value_x = analogRead(joyPin[0]);
+  calibration_joystick_value_y = analogRead(joyPin[1]);
+  Serial.println(calibration_joystick_value_x);
+  Serial.println(calibration_joystick_value_y);
+  delay(100);
+  initialisation();
   while (!Serial) {
     ; // wait for serial port to connect. Needed for native USB
   }
 Serial.println("ready");
+lcd.clear();
 }
 
 void loop() {
@@ -106,6 +125,7 @@ void loop() {
   //Serial.print("        y    ");Serial.println(servo_y.read());
   if (tir_state)fire();
   couplage_state = false;
+  
 }
 
 
@@ -119,6 +139,8 @@ void serialEvent() {
       joytick_state = false;
       tracking_state = false;
       tx1 = millis();
+      digitalWrite(laser,LOW);
+
     }
     else if (inChar  == 'j')
     {
@@ -160,19 +182,19 @@ void gisement_search( int g)
     {
       if (servo_gisement < g)
        {
-          servo_x.write(servo_x.read()+1);
+          servo_x.writeMicroseconds(servo_x.readMicroseconds()+1);
        }
        else if (servo_gisement > g)
        {
-         servo_x.write(servo_x.read()-1);
+         servo_x.writeMicroseconds(servo_x.readMicroseconds()-1);
        }
        if (servo_site < site)
        {
-          servo_y.write(servo_y.read()+1);
+          servo_y.writeMicroseconds(servo_y.readMicroseconds()+1);
        }
        else if (servo_site > site)
        {
-         servo_y.write(servo_y.read()-1);
+         servo_y.writeMicroseconds(servo_y.readMicroseconds()-1);
        }
       if  (servo_site == site &&  gisement == servo_x.read())
       {
@@ -185,19 +207,19 @@ void gisement_search( int g)
 
 void joystick_control()
 {
-    joy_x = map(analogRead(joyPin[0]),MIN_VAL,MAX_VAL,-90,90);
-    joy_y = map(analogRead(joyPin[1]),MIN_VAL,MAX_VAL,-90,90);
+    joy_x = map(analogRead(joyPin[0]),MIN_VAL,2*calibration_joystick_value_x,-90,90);
+    joy_y = map(analogRead(joyPin[1]),MIN_VAL,2*calibration_joystick_value_y,-90,90);
     delay_x = map(abs(joy_x),90,0,DELAY_MIN,DELAY_MAX);
     delay_y = map(abs(joy_y),90,0,DELAY_MIN,DELAY_MAX);
     tx2 = millis();
     ty2 = millis();
     if (tx2 - tx1 > delay_x)
     {
-      if(joy_x>calibration_joystick_value_x+joy_error)
+      if(joy_x>+joy_error)
       {
-        servo_go_to('X',servo_x.readMicroseconds()+2*ms_step);
+        servo_go_to('X',servo_x.readMicroseconds()+ms_step);
       }
-      else if (joy_x<calibration_joystick_value_x-joy_error)
+      else if (joy_x<-joy_error)
       {
         servo_go_to('X',servo_x.readMicroseconds()-ms_step);
       } 
@@ -205,11 +227,11 @@ void joystick_control()
     }
     if (ty2 - ty1 > delay_y)
     {
-      if(joy_y> calibration_joystick_value_y+joy_error)
+      if(joy_y> joy_error)
       {
         servo_go_to('Y',servo_y.readMicroseconds()-ms_step);
       }
-      else if (joy_y< calibration_joystick_value_y-joy_error)
+      else if (joy_y< -joy_error)
       {
         servo_go_to('Y',servo_y.readMicroseconds()+ms_step);
       }  
@@ -217,21 +239,24 @@ void joystick_control()
     }
 }
 
+
 void servo_go_to(char type,int angle)
 {
+  
+  Serial.println(angle);
  if (type == 'X')
  {
      if (angle < SERVO_X_LIM_MS_MIN)
      {
-       servo_x.write(SERVO_X_LIM_MS_MIN);  
+       servo_x.writeMicroseconds(SERVO_X_LIM_MS_MIN);  
      } 
      else if (angle > SERVO_X_LIM_MS_MAX)
      {
-       servo_x.write(SERVO_X_LIM_MS_MAX);
+       servo_x.writeMicroseconds(SERVO_X_LIM_MS_MAX);
      }
      else 
      {
-        servo_x.write(angle);
+        servo_x.writeMicroseconds(angle);
      }
      return;
  }
@@ -239,15 +264,15 @@ void servo_go_to(char type,int angle)
  {
      if (angle < SERVO_Y_LIM_MS_MIN)
      {
-       servo_y.write(SERVO_Y_LIM_MS_MIN);  
+       servo_y.writeMicroseconds(SERVO_Y_LIM_MS_MIN);  
      } 
      else if (angle > SERVO_Y_LIM_MS_MAX)
      {
-       servo_y.write(SERVO_Y_LIM_MS_MAX);
+       servo_y.writeMicroseconds(SERVO_Y_LIM_MS_MAX);
      }
      else
      {
-       servo_y.write(angle);
+       servo_y.writeMicroseconds(angle);
      }
    return;
  }   
@@ -320,12 +345,24 @@ void tracking_pid()
   //Serial.print("output_x    ");Serial.println(Output_x);
   //Serial.print("input_y    ");Serial.println(Input_y);
   //Serial.print("output_y    ");Serial.println(Output_y);
-  servo_x.write(servo_x.readMicroseconds() - (x/abs(x))*Output_x);
-  servo_y.write(servo_y.readMicroseconds() + (y/abs(y))*Output_y);
+  servo_x.writeMicroseconds(servo_x.readMicroseconds() - (x/abs(x))*Output_x);
+  servo_y.writeMicroseconds(servo_y.readMicroseconds() + (y/abs(y))*Output_y);
+  if (telemetre_state == true)
+  {
+    distance = hc.dist();
+    if (distance < DISTANCE_TRESHOLD)
+    {
+       return;
+    } 
+    lcd.clear();
+    lcd.setCursor(0,0);
+    lcd.print("Target distance");
+    lcd.setCursor(5,1);
+    lcd.print(distance);
+  } 
   digitalWrite(laser,couplage_state);
   if (couplage_state)
       {
-         distance = (distance_msg == 0) ? hc.dist(): distance_msg;
          servo_x_ms =map(parallaxe(servo_x.read(),distance,ecart_x),0,180,455,2400);
          servo_arme_x_ms = servo_arme_x.readMicroseconds();
          servo_y_ms = map(parallaxe(servo_y.read(),distance,ecart_y),0,180,2400,455); 
@@ -350,8 +387,8 @@ void tracking_pid()
             servo_arme_y.writeMicroseconds(servo_arme_y_ms - ms_step);   
           }        
           */ 
-         servo_arme_x.write(parallaxe(servo_x.read(),distance,ecart_x));
-         servo_arme_y.write(parallaxe(servo_y.read(),distance,ecart_y));
+         servo_arme_x.write(parallaxe(servo_x.read(),distance,ecart_x)+jeu_x);
+         servo_arme_y.write(parallaxe(servo_y.read(),distance,ecart_y)+jeu_y);
          //Serial.println(distance);
 
          delay(10);
@@ -361,6 +398,20 @@ void tracking_pid()
 void get_distance(String msg)
 {
   distance_msg  =  msg.substring(1).toInt();
+  distance = distance_msg;
+  if (distance_msg > 0)
+  {
+     lcd.clear();  
+     lcd.setCursor(0,0);
+     lcd.print("Target distance");
+     lcd.setCursor(5,1);
+     lcd.print(distance);
+     telemetre_state = false;    
+  }
+  else
+  {
+     telemetre_state = true;    
+  }  
 }  
 
 float parallaxe(float angle,float distance,float ecart)
@@ -381,3 +432,20 @@ void fire()
       tir_state = false;
   } 
 }
+
+void initialisation()
+{
+  servo_x.write(0);
+  servo_arme_x.write(0);
+  delay(500);
+  servo_x.write(reference[0]);
+  servo_arme_x.write(reference[0]);
+  delay(500);
+  servo_y.write(180);
+  servo_arme_y.write(180);
+  delay(500);
+  servo_y.write(reference[1]);
+  servo_arme_y.write(reference[1]);  
+  delay(500);
+
+}  
