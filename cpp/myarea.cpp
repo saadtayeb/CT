@@ -89,7 +89,7 @@ void MyArea::disable_detection() {
 }
 
 void MyArea::camera_ir() {
-  videoCapture.open("../video2.avi");
+  videoCapture.open("../video.avi");
   detection_enable = 0;
     videoCapture.set(4, 720);
   videoCapture.set(3, 1280);	
