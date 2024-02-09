@@ -32,7 +32,7 @@ using namespace std;
 using namespace cv;
 //"/home/saad/Desktop/yolo/video2.avi"
 MyArea::MyArea():
-  videoCapture(2) {
+  videoCapture(0) {
   videoCapture.set(4, 720);
   videoCapture.set(3, 1280);
 
@@ -72,7 +72,7 @@ bool MyArea::on_my_button_press_event(GdkEventButton * button_event) {
 }
 
 void MyArea::camera_visible() {
-  videoCapture.open(2);
+  videoCapture.open(0);
     videoCapture.set(4, 720);
   videoCapture.set(3, 1280);
   detection_enable = 0;
@@ -89,7 +89,7 @@ void MyArea::disable_detection() {
 }
 
 void MyArea::camera_ir() {
-  videoCapture.open(2);
+  videoCapture.open("../video2.avi");
   detection_enable = 0;
     videoCapture.set(4, 720);
   videoCapture.set(3, 1280);	
